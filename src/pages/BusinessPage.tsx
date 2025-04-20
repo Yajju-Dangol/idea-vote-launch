@@ -7,6 +7,7 @@ import { Heart, Plus } from "lucide-react";
 import SubmitIdeaModal from "@/components/business/SubmitIdeaModal";
 import { Tilt } from "@/components/ui/tilt";
 import { cn } from "@/lib/utils";
+import Lightbox from "@/components/ui/Lightbox";
 
 // Define a more specific type for submissions after processing
 type ProcessedSubmission = {
@@ -32,6 +33,7 @@ const BusinessPage = () => {
   const [submissions, setSubmissions] = useState<ProcessedSubmission[]>([]); // Use specific type
   const [user, setUser] = useState<any>(null);
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
+  const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null); // State for lightbox
   
   useEffect(() => {
     const fetchUserAndBusiness = async () => {
@@ -305,13 +307,21 @@ const BusinessPage = () => {
             </div>
           ) : (
             submissions.map((submission) => (
-              <Tilt key={submission.id} rotationFactor={5} className="w-full">
+              <Tilt 
+                key={submission.id} 
+                rotationFactor={5} 
+                className={cn(
+                  "w-full", 
+                  submission.image_url && "cursor-pointer"
+                )}
+              >
                 <div className="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm h-full">
                   {submission.image_url ? (
                     <img
                       src={submission.image_url}
                       alt={submission.title}
-                      className="h-48 w-full object-cover"
+                      className="h-48 w-full object-cover transition-opacity hover:opacity-90"
+                      onClick={() => setSelectedImageUrl(submission.image_url)} 
                     />
                   ) : (
                     <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
@@ -369,6 +379,10 @@ const BusinessPage = () => {
         onSubmissionComplete={() => {
           fetchSubmissions(business.id, user);
         }}
+      />
+      <Lightbox 
+        imageUrl={selectedImageUrl} 
+        onClose={() => setSelectedImageUrl(null)} 
       />
     </div>
   );
