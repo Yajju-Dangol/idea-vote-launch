@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import Auth from "./pages/Auth";
 import NotFound from "./pages/NotFound";
 import Dashboard from "./pages/Dashboard";
+import CreatorDashboard from "./pages/CreatorDashboard";
 import CreateBusiness from "./pages/CreateBusiness";
 import BusinessPage from "./pages/BusinessPage";
 import Settings from "./pages/Settings";
@@ -24,6 +25,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/auth" element={<Auth />} />
           <Route path="/dashboard" element={<Dashboard />} />
+          <Route path="/creator" element={<CreatorDashboard />} />
           <Route path="/create-business" element={<CreateBusiness />} />
           <Route path="/p/:slug" element={<BusinessPage />} />
           <Route path="/settings" element={<Settings />} />

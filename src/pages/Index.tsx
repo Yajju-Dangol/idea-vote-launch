@@ -33,7 +33,7 @@ const Index = () => {
               <p className="text-gray-600 mb-6">
                 Submit product ideas and vote on suggestions for your favorite brands.
               </p>
-              <Button onClick={() => navigate("/auth")} className="w-full">
+              <Button onClick={() => navigate("/creator")} className="w-full">
                 Join as Creator
               </Button>
             </Card>
@@ -42,6 +42,3 @@ const Index = () => {
       </div>
     </div>
   );
-};
-
-export default Index;
