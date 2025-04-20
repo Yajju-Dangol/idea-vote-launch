@@ -321,7 +321,7 @@ const BusinessPage = () => {
                   <div className="p-4 flex flex-col flex-grow">
                     <h3 className="font-semibold tracking-tight text-lg mb-1">{submission.title}</h3>
                     <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
-                    <div className="flex items-center justify-between mt-auto">
+                    <div className="flex items-center justify-between mt-auto gap-4">
                       <Button 
                         variant={submission.hasVoted ? "default" : "outline"} 
                         size="sm" 
@@ -337,7 +337,22 @@ const BusinessPage = () => {
                         />
                         <span>{submission.voteCount}</span>
                       </Button>
-                      {/* Add other elements like status badges if needed later */}
+                      
+                      {submission.status && submission.status !== 'pending' && (
+                        <span 
+                          className={cn(
+                            "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
+                            {
+                              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
+                              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
+                              'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
+                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': ![ 'under_review', 'selected', 'rejected'].includes(submission.status)
+                            }
+                          )}
+                        >
+                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
+                        </span>
+                      )}
                     </div>
                   </div>
                 </div>
