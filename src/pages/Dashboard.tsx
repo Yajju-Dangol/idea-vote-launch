@@ -93,6 +93,16 @@ const Dashboard = () => {
     );
   }
 
+  // Added safety check - only render the dashboard if business data is available
+  if (!business) {
+    return (
+      <div className="min-h-screen flex items-center justify-center flex-col gap-4">
+        <p>No business data found.</p>
+        <Button onClick={() => navigate("/create-business")}>Create Business</Button>
+      </div>
+    );
+  }
+
   return (
     <div className="min-h-screen bg-gray-50">
       <DashboardHeader business={business} />
