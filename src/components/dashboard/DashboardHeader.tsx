@@ -40,7 +40,7 @@ const DashboardHeader = ({ business, title }: DashboardHeaderProps) => {
   };
 
   return (
-    <header className="bg-white border-b">
+    <header className="border-b">
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div>

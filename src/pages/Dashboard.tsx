@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -104,14 +103,14 @@ const Dashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <DashboardHeader business={business} />
       
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-6 md:grid-cols-3 mb-8">
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Total Submissions</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Submissions</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{stats.totalSubmissions}</p>
@@ -120,7 +119,7 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Total Votes</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Total Votes</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{stats.totalVotes}</p>
@@ -129,7 +128,7 @@ const Dashboard = () => {
           
           <Card>
             <CardHeader className="pb-2">
-              <CardTitle className="text-sm font-medium text-gray-500">Pending Review</CardTitle>
+              <CardTitle className="text-sm font-medium text-muted-foreground">Pending Review</CardTitle>
             </CardHeader>
             <CardContent>
               <p className="text-3xl font-bold">{stats.pendingReview}</p>

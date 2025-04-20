@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -129,7 +128,7 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <DashboardHeader business={business} />
       
       <div className="container mx-auto px-4 py-8">
@@ -200,7 +199,7 @@ const Settings = () => {
                 <div className="flex flex-col sm:flex-row sm:items-center gap-4">
                   <div className="flex-grow">
                     <p className="text-sm font-medium">Your public page URL:</p>
-                    <p className="text-sm text-gray-500">{window.location.origin}/p/{business.slug}</p>
+                    <p className="text-sm text-muted-foreground">{window.location.origin}/p/{business.slug}</p>
                   </div>
                   <Button
                     variant="outline"

@@ -54,14 +54,14 @@ const CreatorDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
+    <div className="min-h-screen">
       <DashboardHeader title="Creator Dashboard" />
       
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">
           {businesses.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500">No businesses available yet</p>
+              <p className="text-muted-foreground">No businesses available yet</p>
             </div>
           ) : (
             businesses.map((business) => (
@@ -69,7 +69,7 @@ const CreatorDashboard = () => {
                 <CardHeader>
                   <CardTitle className="text-xl">{business.name}</CardTitle>
                   {business.tagline && (
-                    <p className="text-gray-600 text-sm">{business.tagline}</p>
+                    <p className="text-muted-foreground text-sm">{business.tagline}</p>
                   )}
                 </CardHeader>
                 <CardContent>

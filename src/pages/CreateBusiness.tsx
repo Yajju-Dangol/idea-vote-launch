@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -67,7 +66,7 @@ const CreateBusiness = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center bg-gray-50 px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Create Your Votely Business Page</CardTitle>

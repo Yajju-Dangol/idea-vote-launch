@@ -299,13 +299,13 @@ const BusinessPage = () => {
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
+    <div className="min-h-screen">
+      <div className="border-b">
         <div className="container mx-auto px-4 py-4">
           <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold">{business.name}</h1>
-              <p className="text-gray-600 text-sm">{business.tagline}</p>
+              <p className="text-muted-foreground text-sm">{business.tagline}</p>
             </div>
             
             <div className="flex items-center gap-4">
@@ -320,7 +320,7 @@ const BusinessPage = () => {
 
               {user && (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-gray-600 border-l pl-4 ml-2">
+                  <div className="flex items-center gap-2 text-sm text-muted-foreground border-l pl-4 ml-2">
                     <User size={16} /> 
                     <span className="hidden sm:inline">{user.email}</span>
                   </div>
@@ -347,7 +347,7 @@ const BusinessPage = () => {
         <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
           {submissions.length === 0 ? (
             <div className="col-span-full text-center py-12">
-              <p className="text-gray-500">No product ideas submitted yet. Be the first!</p>
+              <p className="text-muted-foreground">No product ideas submitted yet. Be the first!</p>
             </div>
           ) : (
             submissions.map((submission) => (
@@ -368,8 +368,8 @@ const BusinessPage = () => {
                       onClick={() => setSelectedImageUrl(submission.image_url)} 
                     />
                   ) : (
-                    <div className="h-48 w-full bg-gray-200 flex items-center justify-center">
-                      <span className="text-gray-500 text-sm">No Image</span>
+                    <div className="h-48 w-full bg-secondary flex items-center justify-center">
+                      <span className="text-muted-foreground text-sm">No Image</span>
                     </div>
                   )}
                   <div className="p-4 flex flex-col flex-grow">

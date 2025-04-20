@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
 import { Card } from "@/components/ui/card";
@@ -73,9 +72,9 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
 
   if (submissions.length === 0) {
     return (
-      <div className="text-center py-12 bg-white rounded-lg border">
-        <p className="text-gray-500">No product suggestions yet</p>
-        <p className="text-sm text-gray-400 mt-2">
+      <div className="text-center py-12 rounded-lg border">
+        <p className="text-muted-foreground">No product suggestions yet</p>
+        <p className="text-sm text-muted-foreground/80 mt-2">
           Share your page with customers to get suggestions
         </p>
       </div>
@@ -87,20 +86,20 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
       {submissions.map(submission => (
         <Card key={submission.id} className="overflow-hidden">
           <div className="flex border-0">
-            <div className="p-4 flex flex-col items-center justify-center bg-gray-50 border-r min-w-[80px]">
+            <div className="p-4 flex flex-col items-center justify-center bg-secondary border-r min-w-[80px]">
               <div className="flex flex-col items-center">
                 <ChevronUp size={16} />
                 <span className="font-semibold">{submission.votes[0]?.count || 0}</span>
-                <span className="text-xs text-gray-500">votes</span>
+                <span className="text-xs text-muted-foreground">votes</span>
               </div>
             </div>
             
             <div className="p-4 flex-grow">
               <h3 className="font-semibold text-lg mb-1">{submission.title}</h3>
-              <p className="text-gray-600">{submission.description}</p>
+              <p className="text-muted-foreground">{submission.description}</p>
               
               <div className="flex items-center gap-4 mt-4">
-                <div className="flex items-center text-xs text-gray-500 gap-1">
+                <div className="flex items-center text-xs text-muted-foreground gap-1">
                   <Calendar size={14} />
                   <span>{formatDate(submission.created_at)}</span>
                 </div>
@@ -108,7 +107,7 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
                 <div>
                   <Select
                     value={submission.status}
-                    onValueChange={(value) => updateStatus(submission.id, value as "pending" | "trending" | "under_review" | "selected" | "rejected")}
+                    onValueChange={(value) => updateStatus(submission.id, value as any)}
                     disabled={updating[submission.id]}
                   >
                     <SelectTrigger className="w-[140px] h-8 text-xs">
@@ -127,7 +126,7 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
             </div>
             
             {submission.image_url && (
-              <div className="w-24 h-24 md:w-32 md:h-32 bg-gray-200">
+              <div className="w-24 h-24 md:w-32 md:h-32 bg-secondary">
                 <img 
                   src={submission.image_url} 
                   alt={submission.title}
