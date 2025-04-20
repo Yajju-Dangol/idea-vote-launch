@@ -2,6 +2,18 @@
 @tailwind components;
 @tailwind utilities;
 
+/* Add keyframes for grid animation */
+@layer utilities {
+  @keyframes grid {
+    0% {
+      transform: translateY(0px);
+    }
+    100% {
+      transform: translateY(var(--cell-size, 60px));
+    }
+  }
+}
+
 @layer base {
   :root {
     --background: 0 0% 100%;
