@@ -42,3 +42,6 @@ const Index = () => {
       </div>
     </div>
   );
+}; // Added missing closing semicolon and brace
+
+export default Index;
