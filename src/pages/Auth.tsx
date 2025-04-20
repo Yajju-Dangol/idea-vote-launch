@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
@@ -26,7 +25,12 @@ const Auth = () => {
           </TabsList>
           
           <TabsContent value="register">
-            <AuthForm mode="register" isBusiness={isBusiness} returnPath={returnPath} />
+            <AuthForm 
+              mode="register" 
+              isBusiness={isBusiness} 
+              returnPath={returnPath} 
+              onSignupSuccess={() => setActiveTab("login")}
+            />
           </TabsContent>
           
           <TabsContent value="login">

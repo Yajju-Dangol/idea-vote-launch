@@ -1,4 +1,3 @@
-
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useForm } from "react-hook-form";
@@ -12,6 +11,7 @@ interface AuthFormProps {
   mode: "login" | "register";
   isBusiness?: boolean;
   returnPath?: string | null;
+  onSignupSuccess?: () => void;
 }
 
 interface FormData {
@@ -19,7 +19,7 @@ interface FormData {
   password: string;
 }
 
-const AuthForm = ({ mode, isBusiness = false, returnPath = null }: AuthFormProps) => {
+const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess }: AuthFormProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
@@ -41,14 +41,8 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null }: AuthFormProps
           description: "Please check your email to confirm your account."
         });
         
-        // If there's a return path, redirect back there after registration
-        if (returnPath) {
-          navigate(returnPath);
-        } else if (isBusiness) {
-          navigate("/create-business");
-        } else {
-          navigate("/dashboard");
-        }
+        // Instead of navigating, call the success callback to switch tabs
+        onSignupSuccess?.();
         
       } else {
         // Login
@@ -77,7 +71,8 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null }: AuthFormProps
           if (businessData && businessData.length > 0) {
             navigate("/dashboard");
           } else {
-            navigate("/creator");
+            // If user logs in and has no business, redirect to create business page
+            navigate("/create-business"); 
           }
         }
       }
