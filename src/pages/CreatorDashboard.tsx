@@ -1,4 +1,3 @@
-
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
@@ -6,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { toast } from "@/components/ui/use-toast";
 import { ArrowUpRight } from "lucide-react";
+import DashboardHeader from "@/components/dashboard/DashboardHeader";
 
 const CreatorDashboard = () => {
   const navigate = useNavigate();
@@ -55,12 +55,7 @@ const CreatorDashboard = () => {
 
   return (
     <div className="min-h-screen bg-gray-50">
-      <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <h1 className="text-2xl font-bold">Creator Dashboard</h1>
-          <p className="text-gray-600">Vote and submit ideas for businesses</p>
-        </div>
-      </div>
+      <DashboardHeader title="Creator Dashboard" />
       
       <div className="container mx-auto px-4 py-8">
         <div className="grid gap-6 md:grid-cols-2 lg:grid-cols-3">

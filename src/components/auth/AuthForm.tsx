@@ -62,17 +62,13 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess
         if (returnPath) {
           navigate(returnPath);
         } else {
-          // Redirect based on whether they have a business or not
-          const { data: businessData } = await supabase
-            .from("businesses")
-            .select("id")
-            .limit(1);
-          
-          if (businessData && businessData.length > 0) {
-            navigate("/dashboard");
+          // Redirect based *only* on whether the user logged in via the business or creator flow
+          if (isBusiness) {
+            // User logged in via /auth?type=business
+            navigate("/create-business");
           } else {
-            // If user logs in and has no business, redirect to create business page
-            navigate("/create-business"); 
+            // User logged in via /auth
+            navigate("/creator");
           }
         }
       }

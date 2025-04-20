@@ -1,20 +1,31 @@
-
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { supabase } from "@/integrations/supabase/client";
-import { User, LogOut } from "lucide-react";
+import { LogOut, User } from "lucide-react";
 
 interface DashboardHeaderProps {
-  business: {
+  business?: {
     name: string;
     slug: string;
   };
+  title?: string;
 }
 
-const DashboardHeader = ({ business }: DashboardHeaderProps) => {
+const DashboardHeader = ({ business, title }: DashboardHeaderProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [userEmail, setUserEmail] = useState<string | null>(null);
+
+  useEffect(() => {
+    const fetchUser = async () => {
+      const { data: { session } } = await supabase.auth.getSession();
+      if (session?.user?.email) {
+        setUserEmail(session.user.email);
+      }
+    };
+    fetchUser();
+  }, []);
 
   const handleLogout = async () => {
     try {
@@ -33,21 +44,17 @@ const DashboardHeader = ({ business }: DashboardHeaderProps) => {
       <div className="container mx-auto px-4 py-4">
         <div className="flex justify-between items-center">
           <div>
-            <h1 className="text-xl font-bold">{business.name}</h1>
+            <h1 className="text-xl font-bold">{business?.name || title || "Dashboard"}</h1>
             <p className="text-sm text-gray-500">Dashboard</p>
           </div>
           
           <div className="flex items-center gap-4">
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={() => navigate("/settings")} 
-              className="gap-1"
-            >
-              <User size={16} />
-              <span className="hidden sm:inline">Account</span>
-            </Button>
-            
+            {userEmail && (
+              <div className="flex items-center gap-2 text-sm text-gray-600">
+                 <User size={16} /> 
+                <span className="hidden sm:inline">{userEmail}</span>
+              </div>
+            )}
             <Button
               variant="outline"
               size="sm"
