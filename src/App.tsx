@@ -28,34 +28,53 @@ const AuthRedirectHandler = () => {
         const destination = localStorage.getItem('oauth_destination');
         localStorage.removeItem('oauth_destination'); // Clean up immediately
 
-        if (destination === '/check-business-then-redirect') {
-          console.log('OAuth destination requires business check...');
+        // Check for destinations requiring a business lookup
+        if (destination === '/check-business-then-redirect' || destination === '/check-business-then-dashboard-or-create') {
+          const isBusinessFlowCheck = destination === '/check-business-then-dashboard-or-create';
+          console.log(`OAuth destination requires business check (Business Flow: ${isBusinessFlowCheck})...`);
           try {
             const { data: businessData, error: businessError } = await supabase
               .from("businesses")
               .select("id")
               .eq("user_id", session.user.id)
               .limit(1);
+
+            if (businessError) {
+              console.error("Error checking for business after OAuth:", businessError);
+              // Throw to fall back in catch block
+              throw businessError; 
+            }
             
-            if (businessError) throw businessError;
-            
-            if (businessData && businessData.length > 0) {
+            const hasBusiness = businessData && businessData.length > 0;
+
+            if (hasBusiness) {
               console.log('Business found, navigating to /dashboard');
               navigate("/dashboard", { replace: true });
             } else {
-              console.log('No business found, navigating to /creator');
-              navigate("/creator", { replace: true });
+              // No business found, redirect depends on the original flow
+              if (isBusinessFlowCheck) {
+                 console.log('No business found (business flow check), navigating to /create-business');
+                 navigate("/create-business", { replace: true });
+              } else {
+                 console.log('No business found (generic flow check), navigating to /creator');
+                 navigate("/creator", { replace: true });
+              }
             }
           } catch (error) {
-            console.error("Error checking for business after OAuth:", error);
-            // Fallback on error
-            navigate("/creator", { replace: true }); 
+            console.error("Error during post-OAuth business check:", error);
+            // Fallback on error - direct to create-business if that was the intent, otherwise creator
+            const fallbackPath = isBusinessFlowCheck ? "/create-business" : "/creator";
+            console.log(`Falling back to ${fallbackPath}`);
+            navigate(fallbackPath, { replace: true }); 
           }
-        } else if (destination) {
-          // Navigate to specific returnPath or /create-business
+        } 
+        // Handle direct destinations (like returnPath)
+        else if (destination) {
           console.log('OAuth destination found:', destination, '. Navigating...');
           navigate(destination, { replace: true });
         }
+        // If no destination was stored, maybe default to /creator or /dashboard?
+        // else { navigate("/creator", { replace: true }); } 
       }
     });
 
@@ -63,7 +82,6 @@ const AuthRedirectHandler = () => {
     return () => {
       authListener?.subscription.unsubscribe();
     };
-    // Add session.user.id dependency? No, onAuthStateChange handles user changes.
   }, [navigate]);
 
   return null; // This component renders nothing

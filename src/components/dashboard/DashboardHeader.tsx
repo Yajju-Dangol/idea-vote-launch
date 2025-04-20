@@ -45,13 +45,11 @@ const DashboardHeader = ({ business, title }: DashboardHeaderProps) => {
         <div className="flex justify-between items-center">
           <div>
             <h1 className="text-xl font-bold">{business?.name || title || "Dashboard"}</h1>
-            <p className="text-sm text-gray-500">Dashboard</p>
           </div>
-          
           <div className="flex items-center gap-4">
             {userEmail && (
               <div className="flex items-center gap-2 text-sm text-gray-600">
-                 <User size={16} /> 
+                <User size={16} />
                 <span className="hidden sm:inline">{userEmail}</span>
               </div>
             )}

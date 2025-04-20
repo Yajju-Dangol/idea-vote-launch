@@ -30,73 +30,138 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess
   const onSubmit = async (data: FormData) => {
     try {
       setLoading(true);
-      
-      if (mode === "register") {
-        const { error } = await supabase.auth.signUp({
-          email: data.email,
-          password: data.password,
-        });
-        
-        if (error) throw error;
-        
-        toast({
-          title: "Registration successful!",
-          description: "Please check your email to confirm your account."
-        });
-        
-        if (returnPath) {
-          console.log('Signup success, navigating back to returnPath:', returnPath);
-          navigate(returnPath); 
-        } else if (onSignupSuccess) {
-          console.log('Signup success, no returnPath, calling onSignupSuccess (tab switch).');
-          onSignupSuccess();
-        }
-        
-      } else {
-        // Login (Email/Password)
-        const { data: sessionData, error } = await supabase.auth.signInWithPassword({
-          email: data.email,
-          password: data.password,
-        });
-        
-        if (error) throw error;
-        if (!sessionData.user) throw new Error("Login successful but no user data found.");
 
-        toast({ title: "Login successful!", description: "Welcome back!" });
+      if (mode === "register") {
+        // --- Try to log in first --- //
+        let loginError: any = null;
+        let loggedInSession: any = null;
+        try {
+          console.log("Register mode: Attempting sign-in first for email:", data.email);
+          const { data: signInData, error: signInError } = await supabase.auth.signInWithPassword({
+            email: data.email,
+            password: data.password,
+          });
+          if (signInError) {
+            // Throw error to be caught below
+            throw signInError;
+          } else {
+            // Login successful!
+            loggedInSession = signInData.session;
+          }
+        } catch (error: any) {
+          // Store login error to check if we should proceed to signup
+          loginError = error;
+          console.log("Initial sign-in attempt failed:", loginError.message);
+        }
+
+        // --- Handle Successful Login (if loggedInSession is set) --- //
+        if (loggedInSession?.user) {
+          toast({ title: "Login successful!", description: "Welcome back!" });
+          // Check for business and redirect
+           const { data: businessData, error: businessError } = await supabase
+             .from("businesses")
+             .select("id")
+             .eq("user_id", loggedInSession.user.id)
+             .limit(1);
+
+           if (businessError) {
+             console.error("Error checking for business during register->login:", businessError);
+             navigate("/creator"); // Fallback to creator on error
+           } else if (businessData && businessData.length > 0) {
+             navigate("/dashboard"); // Has business -> dashboard
+           } else {
+             navigate("/creator"); // No business -> creator
+           }
+           setLoading(false);
+           return; // Exit early, login was successful
+        }
+
+        // --- Proceed to Sign Up only if initial login failed with invalid credentials --- //
+        // Check for specific Supabase error messages or codes if available
+        const proceedToSignup = loginError && 
+          (loginError.message.includes("Invalid login credentials") || 
+           loginError.message.includes("Email not confirmed")); // Or other relevant errors indicating user might exist but couldn't log in simply
         
-        // Priority 1: Return Path
+        if (!proceedToSignup && loginError) {
+           // Some other login error occurred (network, etc.), don't try signup
+           throw loginError; // Rethrow the original login error
+        }
+
+        // --- Actual Sign Up Logic --- //
+        console.log("Proceeding with actual signup for email:", data.email);
+        const { error: signUpError } = await supabase.auth.signUp({
+          email: data.email,
+          password: data.password,
+        });
+
+        if (signUpError) {
+          // Handle specific signup errors if needed (e.g., password too short)
+          throw signUpError;
+        }
+
+        toast({ title: "Registration successful!", description: "Please check your email to confirm your account." });
+
+        // PRIORITIZE returnPath after successful signup
         if (returnPath) {
           navigate(returnPath);
-        } 
-        // Priority 2: Came from Business flow
-        else if (isBusiness) {
-          // User explicitly wanted business flow, send to create if needed
-          navigate("/create-business"); 
-        } 
-        // Priority 3: Generic login (e.g., from Navbar) -> Check for existing business
-        else {
-          const { data: businessData, error: businessError } = await supabase
-            .from("businesses")
-            .select("id")
-            .eq("user_id", sessionData.user.id) // Check against logged-in user
-            .limit(1);
-
-          if (businessError) {
-            console.error("Error checking for business:", businessError);
-            // Fallback to creator dashboard on error
-            navigate("/creator");
-          } else if (businessData && businessData.length > 0) {
-            // Business exists, go to dashboard
-            navigate("/dashboard");
-          } else {
-            // No business exists, go to creator dashboard
-            navigate("/creator");
-          }
+        } else if (onSignupSuccess) {
+          onSignupSuccess(); // Fallback to switching tabs if no returnPath
         }
+
+      } else {
+        // Login Mode (existing logic)
+        // ... (login logic remains largely the same, checking returnPath, isBusiness, then business presence) ...
+         const { data: sessionData, error } = await supabase.auth.signInWithPassword({
+           email: data.email,
+           password: data.password,
+         });
+         if (error) throw error;
+         if (!sessionData.user) throw new Error("Login successful but no user data found.");
+         toast({ title: "Login successful!", description: "Welcome back!" });
+         if (returnPath) {
+           navigate(returnPath);
+         } 
+         // Priority 2: Came from Business flow -> CHECK if business exists first
+         else if (isBusiness) {
+           console.log("Login via business flow, checking existing business...");
+           const { data: businessData, error: businessError } = await supabase
+             .from("businesses")
+             .select("id")
+             .eq("user_id", sessionData.user.id)
+             .limit(1);
+           
+           if (businessError) {
+             console.error("Error checking for business (business flow):", businessError);
+             navigate("/create-business"); // Fallback to create on error
+           } else if (businessData && businessData.length > 0) {
+             console.log("Business found, navigating to /dashboard");
+             navigate("/dashboard"); // Has business -> dashboard
+           } else {
+             console.log("No business found, navigating to /create-business");
+             navigate("/create-business"); // No business -> create page
+           }
+         } 
+         // Priority 3: Generic login (already correct)
+         else {
+           const { data: businessData, error: businessError } = await supabase
+             .from("businesses")
+             .select("id")
+             .eq("user_id", sessionData.user.id)
+             .limit(1);
+           if (businessError) {
+             console.error("Error checking for business:", businessError);
+             navigate("/creator");
+           } else if (businessData && businessData.length > 0) {
+             navigate("/dashboard");
+           } else {
+             navigate("/creator");
+           }
+         }
       }
     } catch (error: any) {
+      console.error("AuthForm Error:", error);
       toast({
-        title: mode === "login" ? "Login failed" : "Registration failed",
+        title: mode === 'login' ? "Login Failed" : "Operation Failed", // More generic title for register mode now
         description: error.message,
         variant: "destructive"
       });
@@ -112,8 +177,8 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess
       let destination = returnPath; // Priority 1: Return Path
       if (!destination) {
         destination = isBusiness 
-          ? '/create-business' // Priority 2: Business flow
-          : '/check-business-then-redirect'; // Priority 3: Generic flow -> requires check after callback
+          ? '/check-business-then-dashboard-or-create' // Priority 2: Business flow -> requires check
+          : '/check-business-then-redirect'; // Priority 3: Generic flow -> requires check
       }
       
       localStorage.setItem('oauth_destination', destination);

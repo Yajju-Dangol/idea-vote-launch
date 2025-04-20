@@ -3,17 +3,34 @@ import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthForm from "@/components/auth/AuthForm";
+import { Button } from "@/components/ui/button";
+import { X } from "lucide-react";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
   const location = useLocation();
+  const navigate = useNavigate();
   const returnPath = location.state?.returnPath || null;
   const isBusiness = searchParams.get("type") === "business";
   const [activeTab, setActiveTab] = useState<"login" | "register">("register");
   
+  const handleClose = () => {
+    navigate('/');
+  };
+
   return (
     <div className="min-h-screen flex items-center justify-center px-4">
-      <Card className="w-full max-w-md p-6">
+      <Card className="w-full max-w-md p-6 relative">
+        <Button 
+          variant="ghost"
+          size="icon"
+          className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground"
+          onClick={handleClose}
+          aria-label="Close authentication"
+        >
+          <X size={18} />
+        </Button>
+
         <h1 className="text-2xl font-bold text-center mb-6">
           {isBusiness ? "Create Your Business Page" : "Join Votely"}
         </h1>
