@@ -17,7 +17,7 @@ interface Submission {
   title: string;
   description: string;
   image_url: string;
-  status: string;
+  status: "pending" | "trending" | "under_review" | "selected" | "rejected";
   created_at: string;
   votes: { count: number }[];
 }
@@ -31,7 +31,7 @@ interface SubmissionsListProps {
 const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListProps) => {
   const [updating, setUpdating] = useState<Record<string, boolean>>({});
 
-  const updateStatus = async (submissionId: string, newStatus: string) => {
+  const updateStatus = async (submissionId: string, newStatus: "pending" | "trending" | "under_review" | "selected" | "rejected") => {
     try {
       setUpdating(prev => ({ ...prev, [submissionId]: true }));
       
@@ -108,7 +108,7 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
                 <div>
                   <Select
                     value={submission.status}
-                    onValueChange={(value) => updateStatus(submission.id, value)}
+                    onValueChange={(value) => updateStatus(submission.id, value as "pending" | "trending" | "under_review" | "selected" | "rejected")}
                     disabled={updating[submission.id]}
                   >
                     <SelectTrigger className="w-[140px] h-8 text-xs">

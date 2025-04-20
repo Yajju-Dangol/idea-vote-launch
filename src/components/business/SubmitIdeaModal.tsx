@@ -1,20 +1,20 @@
 
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useForm } from "react-hook-form";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Label } from "@/components/ui/label";
 import { Textarea } from "@/components/ui/textarea";
+import { Label } from "@/components/ui/label";
+import { toast } from "@/components/ui/use-toast";
 import {
   Dialog,
   DialogContent,
   DialogHeader,
   DialogTitle,
   DialogDescription,
+  DialogFooter,
 } from "@/components/ui/dialog";
-import { toast } from "@/components/ui/use-toast";
 import { Upload } from "lucide-react";
 
 interface SubmitIdeaModalProps {
@@ -24,56 +24,49 @@ interface SubmitIdeaModalProps {
   onSubmissionComplete: () => void;
 }
 
-interface IdeaFormData {
-  title: string;
-  description: string;
-  image?: FileList;
-}
-
-const SubmitIdeaModal = ({ 
-  open, 
-  onClose, 
-  businessId, 
-  onSubmissionComplete 
-}: SubmitIdeaModalProps) => {
+const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: SubmitIdeaModalProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
+  const [title, setTitle] = useState("");
+  const [description, setDescription] = useState("");
+  const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
-  const { register, handleSubmit, formState: { errors }, reset, watch } = useForm<IdeaFormData>();
 
-  // Watch for file changes to show preview
-  const watchImage = watch("image");
-  
-  const onSubmit = async (data: IdeaFormData) => {
+  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      const file = e.target.files[0];
+      setImage(file);
+      setImagePreview(URL.createObjectURL(file));
+    }
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    
     try {
-      // Check if user is logged in
+      setLoading(true);
+      
+      // Check if user is authenticated
       const { data: { session } } = await supabase.auth.getSession();
       if (!session) {
-        toast({
-          title: "Please login first",
-          description: "You need to be logged in to submit an idea."
-        });
         navigate("/auth");
         return;
       }
       
-      setLoading(true);
-      let imageUrl = null;
-      
       // Upload image if provided
-      if (data.image && data.image[0]) {
-        const file = data.image[0];
-        const fileExt = file.name.split('.').pop();
-        const fileName = `${Math.random().toString(36).substring(2)}.${fileExt}`;
+      let imageUrl = "https://placehold.co/600x400?text=No+Image";
+      
+      if (image) {
+        const fileExt = image.name.split('.').pop();
+        const fileName = `${Date.now()}.${fileExt}`;
         const filePath = `${fileName}`;
         
-        const { data: uploadData, error: uploadError } = await supabase.storage
+        const { error: uploadError } = await supabase.storage
           .from("product-images")
-          .upload(filePath, file);
+          .upload(filePath, image);
         
         if (uploadError) throw uploadError;
         
-        // Get public URL
         const { data: { publicUrl } } = supabase.storage
           .from("product-images")
           .getPublicUrl(filePath);
@@ -81,31 +74,37 @@ const SubmitIdeaModal = ({
         imageUrl = publicUrl;
       }
       
-      // Insert submission
-      const { data: submission, error: submissionError } = await supabase
+      // Submit the idea
+      const { data, error } = await supabase
         .from("submissions")
         .insert([
           {
-            title: data.title,
-            description: data.description,
-            image_url: imageUrl || "https://placehold.co/400x400/e2e8f0/64748b?text=No+Image",
             business_id: businessId,
-            submitted_by: session.user.id,
-            status: "pending"
+            title,
+            description,
+            image_url: imageUrl,
+            submitted_by: session.user.id
           }
-        ]);
+        ])
+        .select()
+        .single();
       
-      if (submissionError) throw submissionError;
+      if (error) throw error;
       
       toast({
         title: "Idea submitted successfully!",
         description: "Thank you for your suggestion."
       });
       
-      reset();
+      // Reset form
+      setTitle("");
+      setDescription("");
+      setImage(null);
       setImagePreview(null);
-      onSubmissionComplete();
+      
+      // Close modal and refresh submissions
       onClose();
+      onSubmissionComplete();
     } catch (error: any) {
       toast({
         title: "Error submitting idea",
@@ -117,100 +116,90 @@ const SubmitIdeaModal = ({
     }
   };
 
-  // Handle image preview
-  const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setImagePreview(reader.result as string);
-      };
-      reader.readAsDataURL(file);
-    } else {
-      setImagePreview(null);
-    }
-  };
-
   return (
-    <Dialog open={open} onOpenChange={(isOpen) => !isOpen && onClose()}>
-      <DialogContent className="sm:max-w-[500px]">
+    <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
+      <DialogContent className="sm:max-w-md">
         <DialogHeader>
           <DialogTitle>Submit a Product Idea</DialogTitle>
           <DialogDescription>
-            Share your idea for a new product or feature
+            Share your product suggestion or feature request
           </DialogDescription>
         </DialogHeader>
         
-        <form onSubmit={handleSubmit(onSubmit)} className="space-y-6 mt-4">
+        <form onSubmit={handleSubmit} className="space-y-4 pt-2">
           <div className="space-y-2">
             <Label htmlFor="title">Title</Label>
             <Input 
-              id="title"
+              id="title" 
+              value={title}
+              onChange={(e) => setTitle(e.target.value)}
               placeholder="Name of your product idea"
-              {...register("title", { required: "Title is required" })}
+              required
             />
-            {errors.title && (
-              <p className="text-sm text-red-500">{errors.title.message}</p>
-            )}
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="description">Description</Label>
             <Textarea 
               id="description"
-              placeholder="Describe your idea in detail"
-              rows={4}
-              {...register("description", { required: "Description is required" })}
+              value={description}
+              onChange={(e) => setDescription(e.target.value)}
+              placeholder="Describe your product idea in detail"
+              required
             />
-            {errors.description && (
-              <p className="text-sm text-red-500">{errors.description.message}</p>
-            )}
           </div>
           
           <div className="space-y-2">
             <Label htmlFor="image">Image (optional)</Label>
-            <div className="flex items-center gap-4">
-              <Button
-                type="button"
-                variant="outline"
-                className="gap-2"
-                onClick={() => document.getElementById("image")?.click()}
-              >
-                <Upload size={16} />
-                Choose Image
-              </Button>
-              <Input
-                id="image"
-                type="file"
-                accept="image/*"
-                className="hidden"
-                {...register("image")}
-                onChange={handleImageChange}
-              />
-              <span className="text-sm text-gray-500">
-                {watchImage?.[0]?.name || "No file chosen"}
-              </span>
+            <div className="border rounded-md p-2">
+              {imagePreview ? (
+                <div className="relative">
+                  <img 
+                    src={imagePreview} 
+                    alt="Preview" 
+                    className="w-full h-40 object-cover rounded" 
+                  />
+                  <Button 
+                    type="button" 
+                    variant="outline" 
+                    size="sm" 
+                    className="absolute top-2 right-2"
+                    onClick={() => {
+                      setImage(null);
+                      setImagePreview(null);
+                    }}
+                  >
+                    Remove
+                  </Button>
+                </div>
+              ) : (
+                <label className="flex flex-col items-center justify-center h-40 cursor-pointer rounded border border-dashed border-gray-300 bg-gray-50">
+                  <div className="flex flex-col items-center justify-center pt-5 pb-6">
+                    <Upload className="h-6 w-6 text-gray-400" />
+                    <p className="mt-2 text-sm text-gray-500">
+                      Click to upload an image
+                    </p>
+                  </div>
+                  <input 
+                    id="image" 
+                    type="file" 
+                    className="hidden" 
+                    accept="image/*"
+                    onChange={handleImageChange} 
+                  />
+                </label>
+              )}
             </div>
-            
-            {imagePreview && (
-              <div className="mt-4 relative w-full max-w-[200px]">
-                <img 
-                  src={imagePreview} 
-                  alt="Preview" 
-                  className="w-full h-auto rounded border"
-                />
-              </div>
-            )}
           </div>
           
-          <div className="flex gap-2 justify-end">
-            <Button type="button" variant="outline" onClick={onClose}>
+          <DialogFooter>
+            <Button type="button" variant="outline" onClick={onClose} disabled={loading}>
               Cancel
             </Button>
-            <Button type="submit" disabled={loading}>
+            <Button type="submit" disabled={loading || !title || !description}>
               {loading ? "Submitting..." : "Submit Idea"}
             </Button>
-          </div>
+          </DialogFooter>
         </form>
       </DialogContent>
     </Dialog>
