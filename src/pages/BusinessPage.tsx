@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Heart, Plus } from "lucide-react";
+import { Heart, Plus, LogOut, User } from "lucide-react";
 import SubmitIdeaModal from "@/components/business/SubmitIdeaModal";
 import { Tilt } from "@/components/ui/tilt";
 import { cn } from "@/lib/utils";
@@ -34,6 +34,7 @@ const BusinessPage = () => {
   const [user, setUser] = useState<any>(null);
   const [submitModalOpen, setSubmitModalOpen] = useState(false);
   const [selectedImageUrl, setSelectedImageUrl] = useState<string | null>(null); // State for lightbox
+  const [isLoggingOut, setIsLoggingOut] = useState(false); // Add state for logout button
   
   useEffect(() => {
     const fetchUserAndBusiness = async () => {
@@ -251,6 +252,27 @@ const BusinessPage = () => {
     }
   };
 
+  const handleLogout = async () => {
+    setIsLoggingOut(true);
+    try {
+      const { error } = await supabase.auth.signOut();
+      if (error) throw error;
+      setUser(null); // Clear local user state
+      toast({ title: "Logged out successfully." });
+      // Re-fetch submissions for the logged-out state
+      if (business) {
+        await fetchSubmissions(business.id, null);
+      }
+      // Optional: navigate away, but staying might be fine
+      // navigate("/"); 
+    } catch (error: any) {
+      console.error("Error logging out:", error);
+      toast({ title: "Logout failed", description: error.message, variant: "destructive" });
+    } finally {
+      setIsLoggingOut(false);
+    }
+  };
+
   const handleSubmitIdeaClick = () => {
     if (!user) {
       // Redirect to login if not logged in, but remember where to return
@@ -279,20 +301,42 @@ const BusinessPage = () => {
   return (
     <div className="min-h-screen bg-gray-50">
       <div className="bg-white border-b">
-        <div className="container mx-auto px-4 py-8">
-          <div className="flex flex-col md:flex-row justify-between items-start md:items-center gap-4">
+        <div className="container mx-auto px-4 py-4">
+          <div className="flex flex-wrap justify-between items-center gap-4">
             <div>
               <h1 className="text-2xl font-bold">{business.name}</h1>
-              <p className="text-gray-600">{business.tagline}</p>
+              <p className="text-gray-600 text-sm">{business.tagline}</p>
             </div>
             
-            <Button 
-              onClick={handleSubmitIdeaClick} 
-              className="gap-2"
-            >
-              <Plus size={16} />
-              Submit Idea
-            </Button>
+            <div className="flex items-center gap-4">
+              <Button 
+                onClick={handleSubmitIdeaClick} 
+                size="sm"
+                className="gap-1.5"
+              >
+                <Plus size={16} />
+                Submit Idea
+              </Button>
+
+              {user && (
+                <>
+                  <div className="flex items-center gap-2 text-sm text-gray-600 border-l pl-4 ml-2">
+                    <User size={16} /> 
+                    <span className="hidden sm:inline">{user.email}</span>
+                  </div>
+                  <Button
+                    variant="outline"
+                    size="sm"
+                    onClick={handleLogout}
+                    disabled={isLoggingOut}
+                    className="gap-1"
+                  >
+                    <LogOut size={16} />
+                    <span className="hidden sm:inline">Logout</span>
+                  </Button>
+                </>
+              )}
+            </div>
           </div>
         </div>
       </div>
