@@ -8,6 +8,7 @@ import SubmitIdeaModal from "@/components/business/SubmitIdeaModal";
 import { Tilt } from "@/components/ui/tilt";
 import { cn } from "@/lib/utils";
 import Lightbox from "@/components/ui/Lightbox";
+import { motion } from "framer-motion";
 
 // Define a more specific type for submissions after processing
 type ProcessedSubmission = {
@@ -22,6 +23,26 @@ type ProcessedSubmission = {
   business_id: string;
   hasVoted: boolean;
   voteCount: number;
+};
+
+// Animation variants for list container and items
+const containerVariants = {
+  hidden: { opacity: 0 },
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.1 // Stagger children appearance
+    }
+  }
+};
+
+const itemVariants = {
+  hidden: { opacity: 0, y: 20 },
+  visible: { 
+    opacity: 1, 
+    y: 0, 
+    transition: { duration: 0.4 }
+  }
 };
 
 const BusinessPage = () => {
@@ -344,76 +365,80 @@ const BusinessPage = () => {
       <div className="container mx-auto px-4 py-8">
         <h2 className="text-xl font-semibold mb-6">Product Ideas</h2>
         
-        <div className="grid gap-8 md:grid-cols-2 lg:grid-cols-3">
+        <motion.div 
+          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
+          variants={containerVariants}
+          initial="hidden"
+          animate="visible"
+        >
           {submissions.length === 0 ? (
             <div className="col-span-full text-center py-12">
               <p className="text-muted-foreground">No product ideas submitted yet. Be the first!</p>
             </div>
           ) : (
             submissions.map((submission) => (
-              <Tilt 
-                key={submission.id} 
-                rotationFactor={5} 
-                className={cn(
-                  "w-full", 
-                  submission.image_url && "cursor-pointer"
-                )}
-              >
-                <div className="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm h-full">
-                  {submission.image_url ? (
-                    <img
-                      src={submission.image_url}
-                      alt={submission.title}
-                      className="h-48 w-full object-cover transition-opacity hover:opacity-90"
-                      onClick={() => setSelectedImageUrl(submission.image_url)} 
-                    />
-                  ) : (
-                    <div className="h-48 w-full bg-secondary flex items-center justify-center">
-                      <span className="text-muted-foreground text-sm">No Image</span>
-                    </div>
+              <motion.div key={submission.id} variants={itemVariants}>
+                <Tilt 
+                  rotationFactor={5} 
+                  className={cn(
+                    "w-full h-full",
+                    submission.image_url && "cursor-pointer"
                   )}
-                  <div className="p-4 flex flex-col flex-grow">
-                    <h3 className="font-semibold tracking-tight text-lg mb-1">{submission.title}</h3>
-                    <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
-                    <div className="flex items-center justify-between mt-auto gap-4">
-                      <Button 
-                        variant={submission.hasVoted ? "default" : "outline"} 
-                        size="sm" 
-                        onClick={() => handleVote(submission.id)}
-                        className={cn(
-                          "gap-2 transition-colors duration-150",
-                          submission.hasVoted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
-                        )}
-                      >
-                        <Heart 
-                          size={16} 
-                          className={cn(submission.hasVoted && "fill-current")}
-                        />
-                        <span>{submission.voteCount}</span>
-                      </Button>
-                      
-                      {submission.status && submission.status !== 'pending' && (
-                        <span 
+                >
+                  <div className="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm h-full">
+                    {submission.image_url ? (
+                      <img
+                        src={submission.image_url}
+                        alt={submission.title}
+                        className="h-48 w-full object-cover transition-opacity hover:opacity-90"
+                        onClick={() => setSelectedImageUrl(submission.image_url)}
+                      />
+                    ) : (
+                      <div className="h-48 w-full bg-secondary flex items-center justify-center">
+                        <span className="text-muted-foreground text-sm">No Image</span>
+                      </div>
+                    )}
+                    <div className="p-4 flex flex-col flex-grow">
+                      <h3 className="font-semibold tracking-tight text-lg mb-1">{submission.title}</h3>
+                      <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
+                      <div className="flex items-center justify-between mt-auto gap-4">
+                        <Button
+                          variant={submission.hasVoted ? "default" : "outline"}
+                          size="sm"
+                          onClick={() => handleVote(submission.id)}
                           className={cn(
-                            "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
-                            {
-                              'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
-                              'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
-                              'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
-                              'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': ![ 'under_review', 'selected', 'rejected'].includes(submission.status)
-                            }
+                            "gap-2 transition-colors duration-150",
+                            submission.hasVoted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
                           )}
                         >
-                          {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
-                        </span>
-                      )}
+                          <Heart
+                            size={16}
+                            className={cn(submission.hasVoted && "fill-current")} />
+                          <span>{submission.voteCount}</span>
+                        </Button>
+                        {submission.status && submission.status !== 'pending' && (
+                          <span
+                            className={cn(
+                              "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
+                              {
+                                'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
+                                'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
+                                'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
+                                'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': !['under_review', 'selected', 'rejected'].includes(submission.status)
+                              }
+                            )}
+                          >
+                            {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
+                          </span>
+                        )}
+                      </div>
                     </div>
                   </div>
-                </div>
-              </Tilt>
+                </Tilt>
+              </motion.div>
             ))
           )}
-        </div>
+        </motion.div>
       </div>
       
       <SubmitIdeaModal 

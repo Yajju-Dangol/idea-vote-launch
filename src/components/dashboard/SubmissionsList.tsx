@@ -10,6 +10,7 @@ import {
 } from "@/components/ui/select";
 import { toast } from "@/components/ui/use-toast";
 import { ChevronUp, Calendar } from "lucide-react";
+import { motion } from "framer-motion";
 
 interface Submission {
   id: string;
@@ -26,6 +27,25 @@ interface SubmissionsListProps {
   businessId: string;
   onUpdate: (updatedSubmission: Submission) => void;
 }
+
+// Animation variants (can be shared or defined locally)
+const containerVariants = {
+  hidden: { opacity: 1 }, // Parent starts visible
+  visible: {
+    opacity: 1,
+    transition: {
+      staggerChildren: 0.07 // Slightly faster stagger
+    }
+  }
+};
+const itemVariants = {
+  hidden: { opacity: 0, x: -20 }, // Slide from left
+  visible: { 
+    opacity: 1, 
+    x: 0, 
+    transition: { duration: 0.4 }
+  }
+};
 
 const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListProps) => {
   const [updating, setUpdating] = useState<Record<string, boolean>>({});
@@ -82,62 +102,69 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
   }
 
   return (
-    <div className="space-y-4">
+    <motion.div 
+      className="space-y-4"
+      variants={containerVariants}
+      initial="hidden"
+      animate="visible"
+    >
       {submissions.map(submission => (
-        <Card key={submission.id} className="overflow-hidden">
-          <div className="flex border-0">
-            <div className="p-4 flex flex-col items-center justify-center bg-secondary border-r min-w-[80px]">
-              <div className="flex flex-col items-center">
-                <ChevronUp size={16} />
-                <span className="font-semibold">{submission.votes[0]?.count || 0}</span>
-                <span className="text-xs text-muted-foreground">votes</span>
+        <motion.div key={submission.id} variants={itemVariants}>
+          <Card className="overflow-hidden">
+            <div className="flex border-0">
+              <div className="p-4 flex flex-col items-center justify-center bg-secondary border-r min-w-[80px]">
+                <div className="flex flex-col items-center">
+                  <ChevronUp size={16} />
+                  <span className="font-semibold">{submission.votes[0]?.count || 0}</span>
+                  <span className="text-xs text-muted-foreground">votes</span>
+                </div>
               </div>
-            </div>
-            
-            <div className="p-4 flex-grow">
-              <h3 className="font-semibold text-lg mb-1">{submission.title}</h3>
-              <p className="text-muted-foreground">{submission.description}</p>
               
-              <div className="flex items-center gap-4 mt-4">
-                <div className="flex items-center text-xs text-muted-foreground gap-1">
-                  <Calendar size={14} />
-                  <span>{formatDate(submission.created_at)}</span>
-                </div>
+              <div className="p-4 flex-grow">
+                <h3 className="font-semibold text-lg mb-1">{submission.title}</h3>
+                <p className="text-muted-foreground">{submission.description}</p>
                 
-                <div>
-                  <Select
-                    value={submission.status}
-                    onValueChange={(value) => updateStatus(submission.id, value as any)}
-                    disabled={updating[submission.id]}
-                  >
-                    <SelectTrigger className="w-[140px] h-8 text-xs">
-                      <SelectValue placeholder="Status" />
-                    </SelectTrigger>
-                    <SelectContent>
-                      <SelectItem value="pending">Pending</SelectItem>
-                      <SelectItem value="trending">Trending</SelectItem>
-                      <SelectItem value="under_review">Under Review</SelectItem>
-                      <SelectItem value="selected">Selected</SelectItem>
-                      <SelectItem value="rejected">Rejected</SelectItem>
-                    </SelectContent>
-                  </Select>
+                <div className="flex items-center gap-4 mt-4">
+                  <div className="flex items-center text-xs text-muted-foreground gap-1">
+                    <Calendar size={14} />
+                    <span>{formatDate(submission.created_at)}</span>
+                  </div>
+                  
+                  <div>
+                    <Select
+                      value={submission.status}
+                      onValueChange={(value) => updateStatus(submission.id, value as any)}
+                      disabled={updating[submission.id]}
+                    >
+                      <SelectTrigger className="w-[140px] h-8 text-xs">
+                        <SelectValue placeholder="Status" />
+                      </SelectTrigger>
+                      <SelectContent>
+                        <SelectItem value="pending">Pending</SelectItem>
+                        <SelectItem value="trending">Trending</SelectItem>
+                        <SelectItem value="under_review">Under Review</SelectItem>
+                        <SelectItem value="selected">Selected</SelectItem>
+                        <SelectItem value="rejected">Rejected</SelectItem>
+                      </SelectContent>
+                    </Select>
+                  </div>
                 </div>
               </div>
+              
+              {submission.image_url && (
+                <div className="w-24 h-24 md:w-32 md:h-32 bg-secondary">
+                  <img 
+                    src={submission.image_url} 
+                    alt={submission.title}
+                    className="w-full h-full object-cover"
+                  />
+                </div>
+              )}
             </div>
-            
-            {submission.image_url && (
-              <div className="w-24 h-24 md:w-32 md:h-32 bg-secondary">
-                <img 
-                  src={submission.image_url} 
-                  alt={submission.title}
-                  className="w-full h-full object-cover"
-                />
-              </div>
-            )}
-          </div>
-        </Card>
+          </Card>
+        </motion.div>
       ))}
-    </div>
+    </motion.div>
   );
 };
 

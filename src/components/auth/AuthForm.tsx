@@ -53,28 +53,43 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess
         }
         
       } else {
-        // Login
-        const { error } = await supabase.auth.signInWithPassword({
+        // Login (Email/Password)
+        const { data: sessionData, error } = await supabase.auth.signInWithPassword({
           email: data.email,
           password: data.password,
         });
         
         if (error) throw error;
+        if (!sessionData.user) throw new Error("Login successful but no user data found.");
+
+        toast({ title: "Login successful!", description: "Welcome back!" });
         
-        toast({
-          title: "Login successful!",
-          description: "Welcome back!"
-        });
-        
+        // Priority 1: Return Path
         if (returnPath) {
           navigate(returnPath);
-        } else {
-          // Redirect based *only* on whether the user logged in via the business or creator flow
-          if (isBusiness) {
-            // User logged in via /auth?type=business
-            navigate("/create-business");
+        } 
+        // Priority 2: Came from Business flow
+        else if (isBusiness) {
+          // User explicitly wanted business flow, send to create if needed
+          navigate("/create-business"); 
+        } 
+        // Priority 3: Generic login (e.g., from Navbar) -> Check for existing business
+        else {
+          const { data: businessData, error: businessError } = await supabase
+            .from("businesses")
+            .select("id")
+            .eq("user_id", sessionData.user.id) // Check against logged-in user
+            .limit(1);
+
+          if (businessError) {
+            console.error("Error checking for business:", businessError);
+            // Fallback to creator dashboard on error
+            navigate("/creator");
+          } else if (businessData && businessData.length > 0) {
+            // Business exists, go to dashboard
+            navigate("/dashboard");
           } else {
-            // User logged in via /auth
+            // No business exists, go to creator dashboard
             navigate("/creator");
           }
         }
@@ -93,9 +108,16 @@ const AuthForm = ({ mode, isBusiness = false, returnPath = null, onSignupSuccess
   const handleGoogleSignIn = async () => {
     setGoogleLoading(true);
     try {
-      const destination = returnPath || (isBusiness ? '/create-business' : '/creator');
+      // Determine OAuth destination
+      let destination = returnPath; // Priority 1: Return Path
+      if (!destination) {
+        destination = isBusiness 
+          ? '/create-business' // Priority 2: Business flow
+          : '/check-business-then-redirect'; // Priority 3: Generic flow -> requires check after callback
+      }
+      
       localStorage.setItem('oauth_destination', destination);
-      console.log('Storing OAuth destination:', destination); 
+      console.log('Storing OAuth destination:', destination);
 
       const { error } = await supabase.auth.signInWithOAuth({
         provider: 'google',
