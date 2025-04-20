@@ -11,6 +11,7 @@ import { toast } from "@/components/ui/use-toast";
 interface AuthFormProps {
   mode: "login" | "register";
   isBusiness?: boolean;
+  returnPath?: string | null;
 }
 
 interface FormData {
@@ -18,7 +19,7 @@ interface FormData {
   password: string;
 }
 
-const AuthForm = ({ mode, isBusiness = false }: AuthFormProps) => {
+const AuthForm = ({ mode, isBusiness = false, returnPath = null }: AuthFormProps) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const { register, handleSubmit, formState: { errors } } = useForm<FormData>();
@@ -40,9 +41,10 @@ const AuthForm = ({ mode, isBusiness = false }: AuthFormProps) => {
           description: "Please check your email to confirm your account."
         });
         
-        // For development, we might skip email verification
-        // So we'll redirect to the appropriate page
-        if (isBusiness) {
+        // If there's a return path, redirect back there after registration
+        if (returnPath) {
+          navigate(returnPath);
+        } else if (isBusiness) {
           navigate("/create-business");
         } else {
           navigate("/dashboard");
@@ -62,16 +64,21 @@ const AuthForm = ({ mode, isBusiness = false }: AuthFormProps) => {
           description: "Welcome back!"
         });
         
-        // Redirect based on whether they have a business or not
-        const { data: businessData } = await supabase
-          .from("businesses")
-          .select("id")
-          .limit(1);
-        
-        if (businessData && businessData.length > 0) {
-          navigate("/dashboard");
+        // If there's a return path, redirect back there after login
+        if (returnPath) {
+          navigate(returnPath);
         } else {
-          navigate("/create-business");
+          // Redirect based on whether they have a business or not
+          const { data: businessData } = await supabase
+            .from("businesses")
+            .select("id")
+            .limit(1);
+          
+          if (businessData && businessData.length > 0) {
+            navigate("/dashboard");
+          } else {
+            navigate("/creator");
+          }
         }
       }
     } catch (error: any) {

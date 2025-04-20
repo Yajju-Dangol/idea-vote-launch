@@ -1,6 +1,6 @@
 
 import { useEffect, useState } from "react";
-import { useParams, useNavigate } from "react-router-dom";
+import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
@@ -11,6 +11,7 @@ import SubmitIdeaModal from "@/components/business/SubmitIdeaModal";
 const BusinessPage = () => {
   const { slug } = useParams<{ slug: string }>();
   const navigate = useNavigate();
+  const location = useLocation();
   const [loading, setLoading] = useState(true);
   const [business, setBusiness] = useState<any>(null);
   const [submissions, setSubmissions] = useState<any[]>([]);
@@ -101,8 +102,8 @@ const BusinessPage = () => {
   const handleVote = async (submissionId: string) => {
     try {
       if (!user) {
-        // Redirect to login if not logged in
-        navigate("/auth");
+        // Redirect to login if not logged in, but remember where to return
+        navigate("/auth", { state: { returnPath: location.pathname } });
         return;
       }
       
@@ -146,6 +147,15 @@ const BusinessPage = () => {
     }
   };
 
+  const handleSubmitIdeaClick = () => {
+    if (!user) {
+      // Redirect to login if not logged in, but remember where to return
+      navigate("/auth", { state: { returnPath: location.pathname } });
+      return;
+    }
+    setSubmitModalOpen(true);
+  };
+
   if (loading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
@@ -173,7 +183,7 @@ const BusinessPage = () => {
             </div>
             
             <Button 
-              onClick={() => setSubmitModalOpen(true)} 
+              onClick={handleSubmitIdeaClick} 
               className="gap-2"
             >
               <Plus size={16} />
@@ -191,7 +201,7 @@ const BusinessPage = () => {
             <div className="text-center py-12">
               <p className="text-gray-500">No product ideas submitted yet. Be the first!</p>
               <Button 
-                onClick={() => setSubmitModalOpen(true)} 
+                onClick={handleSubmitIdeaClick} 
                 className="mt-4"
               >
                 Submit an Idea

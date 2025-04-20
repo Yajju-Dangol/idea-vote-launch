@@ -1,12 +1,14 @@
 
 import { useState } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useNavigate, useSearchParams, useLocation } from "react-router-dom";
 import { Card } from "@/components/ui/card";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import AuthForm from "@/components/auth/AuthForm";
 
 const Auth = () => {
   const [searchParams] = useSearchParams();
+  const location = useLocation();
+  const returnPath = location.state?.returnPath || null;
   const isBusiness = searchParams.get("type") === "business";
   const [activeTab, setActiveTab] = useState<"login" | "register">("register");
   
@@ -24,11 +26,11 @@ const Auth = () => {
           </TabsList>
           
           <TabsContent value="register">
-            <AuthForm mode="register" isBusiness={isBusiness} />
+            <AuthForm mode="register" isBusiness={isBusiness} returnPath={returnPath} />
           </TabsContent>
           
           <TabsContent value="login">
-            <AuthForm mode="login" isBusiness={isBusiness} />
+            <AuthForm mode="login" isBusiness={isBusiness} returnPath={returnPath} />
           </TabsContent>
         </Tabs>
       </Card>
