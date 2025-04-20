@@ -6,9 +6,21 @@ import HomePageNavbar from "@/components/layout/HomePageNavbar";
 const Index = () => {
   const navigate = useNavigate();
 
+  // Handlers for Navbar actions
+  const handleBusinessSignUp = () => {
+    navigate("/auth?type=business");
+  };
+
+  const handleCreatorSignUp = () => {
+    navigate("/creator");
+  };
+
   return (
     <div>
-      <HomePageNavbar />
+      <HomePageNavbar 
+        onBusinessSignUpClick={handleBusinessSignUp}
+        onCreatorSignUpClick={handleCreatorSignUp}
+      />
       <HeroSection
         className="pt-16"
         subtitle={{

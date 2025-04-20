@@ -2,8 +2,18 @@ import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { Flame } from 'lucide-react'; // Or choose a different icon
+import {
+  Popover,
+  PopoverContent,
+  PopoverTrigger,
+} from "@/components/ui/popover"; // Import Popover components
 
-const HomePageNavbar = () => {
+interface HomePageNavbarProps {
+  onBusinessSignUpClick: () => void;
+  onCreatorSignUpClick: () => void;
+}
+
+const HomePageNavbar: React.FC<HomePageNavbarProps> = ({ onBusinessSignUpClick, onCreatorSignUpClick }) => {
   const navigate = useNavigate();
 
   const handleLoginClick = () => {
@@ -22,10 +32,44 @@ const HomePageNavbar = () => {
           wantthis
         </a>
 
-        {/* Login Button */}
-        <Button variant="outline" onClick={handleLoginClick}>
-          Login
-        </Button>
+        {/* Action Buttons */}
+        <div className="flex items-center gap-2">
+          {/* Login Button */}
+          <Button variant="outline" onClick={handleLoginClick}>
+            Login
+          </Button>
+
+          {/* Sign Up Popover */}
+          <Popover>
+            <PopoverTrigger asChild>
+              <Button>Sign Up</Button>
+            </PopoverTrigger>
+            <PopoverContent className="w-auto p-2">
+              <div className="flex flex-col gap-2">
+                 <Button
+                   variant="ghost"
+                   className="justify-start px-2"
+                   onClick={() => {
+                      onBusinessSignUpClick();
+                      // Optionally close popover here if needed, though clicking usually does
+                   }}
+                 >
+                   Create Your Page (for Businesses)
+                 </Button>
+                 <Button
+                   variant="ghost"
+                   className="justify-start px-2"
+                   onClick={() => {
+                      onCreatorSignUpClick();
+                      // Optionally close popover here
+                   }}
+                 >
+                   Join as Creator
+                 </Button>
+               </div>
+            </PopoverContent>
+          </Popover>
+        </div>
       </nav>
     </header>
   );
