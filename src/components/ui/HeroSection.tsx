@@ -96,8 +96,8 @@ const HeroSection = React.forwardRef<HTMLDivElement, HeroSectionProps>(
                   <ChevronRight className="inline w-4 h-4 ml-1 group-hover:translate-x-0.5 duration-300" />
                 </a>
               )}
-              {/* Subtitle */}
-              <h2 className="text-4xl tracking-tighter font-bold mx-auto md:text-6xl text-foreground">
+              {/* Subtitle - Add tracking-wide */}
+              <h2 className="text-4xl tracking-tighter font-bold mx-auto md:text-6xl text-foreground tracking-wide">
                 {subtitle.regular}
                 <span className="text-transparent bg-clip-text bg-gradient-to-r from-purple-600 to-pink-500 dark:from-purple-400 dark:to-orange-300">
                   {subtitle.gradient}

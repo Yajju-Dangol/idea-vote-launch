@@ -1,6 +1,6 @@
 import { useState } from "react";
 import { supabase } from "@/integrations/supabase/client";
-import { Card } from "@/components/ui/card";
+import { Card, CardContent, CardFooter, CardHeader, CardTitle } from "@/components/ui/card";
 import {
   Select,
   SelectContent,
@@ -11,12 +11,13 @@ import {
 import { toast } from "@/components/ui/use-toast";
 import { ChevronUp, Calendar } from "lucide-react";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 interface Submission {
   id: string;
   title: string;
   description: string;
-  image_url: string;
+  image_url: string | null;
   status: "pending" | "trending" | "under_review" | "selected" | "rejected";
   created_at: string;
   votes: { count: number }[];
@@ -28,21 +29,21 @@ interface SubmissionsListProps {
   onUpdate: (updatedSubmission: Submission) => void;
 }
 
-// Animation variants (can be shared or defined locally)
+// Animation variants
 const containerVariants = {
-  hidden: { opacity: 1 }, // Parent starts visible
+  hidden: { opacity: 1 },
   visible: {
     opacity: 1,
     transition: {
-      staggerChildren: 0.07 // Slightly faster stagger
+      staggerChildren: 0.07
     }
   }
 };
 const itemVariants = {
-  hidden: { opacity: 0, x: -20 }, // Slide from left
+  hidden: { opacity: 0, y: 20 },
   visible: { 
     opacity: 1, 
-    x: 0, 
+    y: 0, 
     transition: { duration: 0.4 }
   }
 };
@@ -90,81 +91,68 @@ const SubmissionsList = ({ submissions, businessId, onUpdate }: SubmissionsListP
     }).format(date);
   };
 
-  if (submissions.length === 0) {
-    return (
-      <div className="text-center py-12 rounded-lg border">
-        <p className="text-muted-foreground">No product suggestions yet</p>
-        <p className="text-sm text-muted-foreground/80 mt-2">
-          Share your page with customers to get suggestions
-        </p>
-      </div>
-    );
-  }
-
   return (
-    <motion.div 
-      className="space-y-4"
-      variants={containerVariants}
-      initial="hidden"
-      animate="visible"
-    >
-      {submissions.map(submission => (
-        <motion.div key={submission.id} variants={itemVariants}>
-          <Card className="overflow-hidden">
-            <div className="flex border-0">
-              <div className="p-4 flex flex-col items-center justify-center bg-secondary border-r min-w-[80px]">
-                <div className="flex flex-col items-center">
-                  <ChevronUp size={16} />
-                  <span className="font-semibold">{submission.votes[0]?.count || 0}</span>
-                  <span className="text-xs text-muted-foreground">votes</span>
-                </div>
-              </div>
-              
-              <div className="p-4 flex-grow">
-                <h3 className="font-semibold text-lg mb-1">{submission.title}</h3>
-                <p className="text-muted-foreground">{submission.description}</p>
-                
-                <div className="flex items-center gap-4 mt-4">
-                  <div className="flex items-center text-xs text-muted-foreground gap-1">
-                    <Calendar size={14} />
-                    <span>{formatDate(submission.created_at)}</span>
-                  </div>
-                  
-                  <div>
-                    <Select
-                      value={submission.status}
-                      onValueChange={(value) => updateStatus(submission.id, value as any)}
-                      disabled={updating[submission.id]}
-                    >
-                      <SelectTrigger className="w-[140px] h-8 text-xs">
-                        <SelectValue placeholder="Status" />
-                      </SelectTrigger>
-                      <SelectContent>
-                        <SelectItem value="pending">Pending</SelectItem>
-                        <SelectItem value="trending">Trending</SelectItem>
-                        <SelectItem value="under_review">Under Review</SelectItem>
-                        <SelectItem value="selected">Selected</SelectItem>
-                        <SelectItem value="rejected">Rejected</SelectItem>
-                      </SelectContent>
-                    </Select>
-                  </div>
-                </div>
-              </div>
-              
-              {submission.image_url && (
-                <div className="w-24 h-24 md:w-32 md:h-32 bg-secondary">
-                  <img 
-                    src={submission.image_url} 
-                    alt={submission.title}
-                    className="w-full h-full object-cover"
-                  />
+    <>
+      {submissions.length === 0 ? (
+         <div className="text-center py-12 rounded-lg border dark:border-gray-700">
+           <p className="text-muted-foreground">No product suggestions yet</p>
+           <p className="text-sm text-muted-foreground/80 mt-2">
+             Share your page with customers to get suggestions
+           </p>
+         </div>
+       ) : (
+        submissions.map(submission => (
+          <motion.div key={submission.id} variants={itemVariants}>
+            <Card className="flex flex-col overflow-hidden h-full">
+              {submission.image_url ? (
+                <img
+                  src={submission.image_url}
+                  alt={submission.title}
+                  className="h-48 w-full object-cover"
+                />
+              ) : (
+                <div className="h-48 w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                  <span className="text-muted-foreground text-sm">No Image</span>
                 </div>
               )}
-            </div>
-          </Card>
-        </motion.div>
-      ))}
-    </motion.div>
+              <CardContent className="p-4 flex flex-col flex-grow">
+                <h3 className="font-semibold tracking-tight text-lg mb-1 text-card-foreground">{submission.title}</h3>
+                <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
+              </CardContent>
+              <CardFooter className="p-4 border-t dark:border-gray-700 flex flex-col items-start gap-2 sm:flex-row sm:flex-wrap sm:items-center sm:justify-between sm:gap-4">
+                <div className="flex items-center gap-1 text-sm text-muted-foreground">
+                   <ChevronUp size={16} />
+                   <span className="font-semibold text-card-foreground">{submission.votes[0]?.count || 0}</span>
+                   <span>votes</span>
+                </div>
+                <div className="flex items-center text-xs text-muted-foreground gap-1">
+                   <Calendar size={14} />
+                   <span>{formatDate(submission.created_at)}</span>
+                </div>
+                <div className="w-full sm:w-auto">
+                  <Select
+                    value={submission.status}
+                    onValueChange={(value) => updateStatus(submission.id, value as any)}
+                    disabled={updating[submission.id]}
+                  >
+                    <SelectTrigger className="w-full sm:w-[140px] h-8 text-xs">
+                      <SelectValue placeholder="Status" />
+                    </SelectTrigger>
+                    <SelectContent>
+                      <SelectItem value="pending">Pending</SelectItem>
+                      <SelectItem value="trending">Trending</SelectItem>
+                      <SelectItem value="under_review">Under Review</SelectItem>
+                      <SelectItem value="selected">Selected</SelectItem>
+                      <SelectItem value="rejected">Rejected</SelectItem>
+                    </SelectContent>
+                  </Select>
+                </div>
+              </CardFooter>
+            </Card>
+          </motion.div>
+        ))
+      )}
+    </>
   );
 };
 

@@ -74,44 +74,47 @@ const CreatorDashboard = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 md:p-6">
       <DashboardHeader title="Creator Dashboard" />
       
-      <div className="container mx-auto px-4 py-8">
-        <motion.div 
-          className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {businesses.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground">No businesses available yet</p>
-            </div>
-          ) : (
-            businesses.map((business) => (
-              <motion.div key={business.id} variants={itemVariants}>
-                <Card className="hover:shadow-lg transition-shadow h-full">
-                  <CardHeader>
-                    <CardTitle className="text-xl">{business.name}</CardTitle>
-                    {business.tagline && (
-                      <p className="text-muted-foreground text-sm">{business.tagline}</p>
-                    )}
-                  </CardHeader>
-                  <CardContent>
-                    <Button 
-                      onClick={() => navigate(`/p/${business.slug}`)} 
-                      className="w-full gap-2"
-                    >
-                      View & Vote
-                      <ArrowUpRight size={16} />
-                    </Button>
-                  </CardContent>
-                </Card>
-              </motion.div>
-            ))
-          )}
-        </motion.div>
+      <div className="mt-6">
+        <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Available Businesses</h2>
+          <motion.div 
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3"
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {businesses.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No businesses available yet</p>
+              </div>
+            ) : (
+              businesses.map((business) => (
+                <motion.div key={business.id} variants={itemVariants}>
+                  <Card className="hover:shadow-lg transition-shadow h-full">
+                    <CardHeader>
+                      <CardTitle className="text-xl">{business.name}</CardTitle>
+                      {business.tagline && (
+                        <p className="text-muted-foreground text-sm">{business.tagline}</p>
+                      )}
+                    </CardHeader>
+                    <CardContent>
+                      <Button 
+                        onClick={() => navigate(`/p/${business.slug}`)} 
+                        className="w-full gap-2"
+                      >
+                        View & Vote
+                        <ArrowUpRight size={16} />
+                      </Button>
+                    </CardContent>
+                  </Card>
+                </motion.div>
+              ))
+            )}
+          </motion.div>
+        </div>
       </div>
     </div>
   );

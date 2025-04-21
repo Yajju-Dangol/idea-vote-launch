@@ -19,19 +19,19 @@ const Auth = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4">
+    <div className="min-h-screen flex items-center justify-center px-4 bg-gray-100 dark:bg-gray-900">
       <Card className="w-full max-w-md p-6 relative">
         <Button 
           variant="ghost"
           size="icon"
-          className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground"
+          className="absolute top-3 right-3 h-7 w-7 text-muted-foreground hover:text-foreground hover:bg-gray-100 dark:hover:bg-gray-700"
           onClick={handleClose}
           aria-label="Close authentication"
         >
           <X size={18} />
         </Button>
 
-        <h1 className="text-2xl font-bold text-center mb-6">
+        <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">
           {isBusiness ? "Create Your Business Page" : "Join Votely"}
         </h1>
         

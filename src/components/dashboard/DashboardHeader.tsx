@@ -40,30 +40,28 @@ const DashboardHeader = ({ business, title }: DashboardHeaderProps) => {
   };
 
   return (
-    <header className="border-b">
-      <div className="container mx-auto px-4 py-4">
-        <div className="flex justify-between items-center">
-          <div>
-            <h1 className="text-xl font-bold">{business?.name || title || "Dashboard"}</h1>
-          </div>
-          <div className="flex items-center gap-4">
-            {userEmail && (
-              <div className="flex items-center gap-2 text-sm text-gray-600">
-                <User size={16} />
-                <span className="hidden sm:inline">{userEmail}</span>
-              </div>
-            )}
-            <Button
-              variant="outline"
-              size="sm"
-              onClick={handleLogout}
-              disabled={loading}
-              className="gap-1"
-            >
-              <LogOut size={16} />
-              <span className="hidden sm:inline">Logout</span>
-            </Button>
-          </div>
+    <header className="bg-white dark:bg-gray-800 rounded-lg shadow p-4">
+      <div className="flex justify-between items-center">
+        <div>
+          <h1 className="text-xl font-bold text-gray-900 dark:text-gray-100">{business?.name || title || "Dashboard"}</h1>
+        </div>
+        <div className="flex items-center gap-4">
+          {userEmail && (
+            <div className="flex items-center gap-2 text-sm text-gray-600 dark:text-gray-400">
+              <User size={16} />
+              <span className="hidden sm:inline">{userEmail}</span>
+            </div>
+          )}
+          <Button
+            variant="outline"
+            size="sm"
+            onClick={handleLogout}
+            disabled={loading}
+            className="gap-1"
+          >
+            <LogOut size={16} />
+            <span className="hidden sm:inline">Logout</span>
+          </Button>
         </div>
       </div>
     </header>

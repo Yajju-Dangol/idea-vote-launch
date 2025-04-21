@@ -128,12 +128,12 @@ const Settings = () => {
   }
 
   return (
-    <div className="min-h-screen">
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 md:p-6">
       <DashboardHeader business={business} />
       
-      <div className="container mx-auto px-4 py-8">
+      <div className="mt-6">
         <div className="max-w-2xl mx-auto">
-          <h2 className="text-2xl font-bold mb-6">Account Settings</h2>
+          <h2 className="text-2xl font-bold mb-6 text-gray-900 dark:text-gray-100">Account Settings</h2>
           
           <Card>
             <CardHeader>

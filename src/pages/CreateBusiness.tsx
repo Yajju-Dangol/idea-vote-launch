@@ -66,7 +66,7 @@ const CreateBusiness = () => {
   };
 
   return (
-    <div className="min-h-screen flex items-center justify-center px-4 py-12">
+    <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-100 dark:bg-gray-900">
       <Card className="w-full max-w-lg">
         <CardHeader>
           <CardTitle>Create Your Votely Business Page</CardTitle>

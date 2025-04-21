@@ -3,7 +3,7 @@ import { useParams, useNavigate, useLocation } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
 import { toast } from "@/components/ui/use-toast";
-import { Heart, Plus, LogOut, User, ArrowLeft, Pencil, Trash2 } from "lucide-react";
+import { Heart, Plus, LogOut, User, ArrowLeft, Pencil, Trash2, Users } from "lucide-react";
 import SubmitIdeaModal from "@/components/business/SubmitIdeaModal";
 import { Tilt } from "@/components/ui/tilt";
 import { cn } from "@/lib/utils";
@@ -468,27 +468,43 @@ const BusinessPage = () => {
   }
 
   return (
-    <div className="min-h-screen">
-      <div className="border-b">
-        <div className="container mx-auto px-4 py-4">
-          <div className="flex flex-wrap justify-between items-center gap-4">
+    // Main page container with dark background
+    <div className="min-h-screen bg-gray-100 dark:bg-gray-900 text-gray-900 dark:text-gray-100 p-4 md:p-6">
+      {/* Header Box */}
+      <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 mb-6">
+         {/* Removed border-b from original header location */}
+         {/* <div className="container mx-auto px-4 py-4"> -> Container adjusted */}
+           <div className="flex flex-wrap justify-between items-center gap-4">
             <div className="flex items-center gap-3">
               <Button 
                 variant="ghost" 
                 size="icon" 
                 onClick={handleGoBack}
                 aria-label="Go back"
-                className="h-8 w-8"
+                 // Consistent dark mode styling for ghost button
+                className="h-8 w-8 text-gray-600 hover:bg-gray-100 dark:text-gray-400 dark:hover:bg-gray-700"
               >
                 <ArrowLeft size={18} />
               </Button>
               <div>
-                <h1 className="text-2xl font-bold">{business.name}</h1>
-                <p className="text-muted-foreground text-sm">{business.tagline}</p>
+                <h1 className="text-2xl font-bold text-gray-900 dark:text-gray-100">{business.name}</h1>
+                <p className="text-muted-foreground text-sm">{business.tagline}</p> { /* text-muted-foreground should adapt */}
               </div>
             </div>
             
-            <div className="flex items-center gap-4">
+            {/* Right side: Action Buttons - Add flex-wrap */}
+            <div className="flex flex-wrap items-center justify-end gap-2 sm:gap-4"> {/* Added flex-wrap and justify-end */}
+              {/* View Others Button */}
+              <Button
+                variant="outline"
+                size="sm"
+                onClick={() => navigate('/creator')}
+                className="gap-1.5"
+              >
+                <Users size={16} />
+                View Others
+              </Button>
+              {/* Submit Idea Button */}
               <Button 
                 onClick={handleSubmitIdeaClick} 
                 size="sm"
@@ -498,11 +514,12 @@ const BusinessPage = () => {
                 Submit Idea
               </Button>
 
+              {/* User Info & Logout */}
               {user && (
                 <>
-                  <div className="flex items-center gap-2 text-sm text-muted-foreground border-l pl-4 ml-2">
+                  <div className="hidden sm:flex items-center gap-2 text-sm text-muted-foreground border-l border-gray-200 dark:border-gray-700 pl-4 ml-2">
                     <User size={16} /> 
-                    <span className="hidden sm:inline">{user.email}</span>
+                    <span>{user.email}</span>
                   </div>
                   <Button
                     variant="outline"
@@ -518,111 +535,133 @@ const BusinessPage = () => {
               )}
             </div>
           </div>
-        </div>
+        {/*</div> -> End adjusted container */} 
       </div>
       
-      <div className="container mx-auto px-4 py-8">
-        <h2 className="text-xl font-semibold mb-6">Product Ideas</h2>
-        
-        <motion.div 
-          className="grid gap-8 md:grid-cols-2 lg:grid-cols-3"
-          variants={containerVariants}
-          initial="hidden"
-          animate="visible"
-        >
-          {submissions.length === 0 ? (
-            <div className="col-span-full text-center py-12">
-              <p className="text-muted-foreground">No product ideas submitted yet. Be the first!</p>
-            </div>
-          ) : (
-            submissions.map((submission) => (
-              <motion.div key={submission.id} variants={itemVariants}>
-                <Tilt 
-                  rotationFactor={5} 
-                  className={cn(
-                    "w-full h-full",
-                    submission.image_url && "cursor-pointer"
-                  )}
-                >
-                  <div className="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm h-full">
-                    {submission.image_url ? (
-                      <img
-                        src={submission.image_url}
-                        alt={submission.title}
-                        className="h-48 w-full object-cover transition-opacity hover:opacity-90 cursor-pointer"
-                        onClick={() => setSelectedImageUrl(submission.image_url)}
-                      />
-                    ) : (
-                      <div className="h-48 w-full bg-secondary flex items-center justify-center">
-                        <span className="text-muted-foreground text-sm">No Image</span>
-                      </div>
-                    )}
-                    <div className="p-4 flex flex-col flex-grow">
-                      <h3 className="font-semibold tracking-tight text-lg mb-1">{submission.title}</h3>
-                      <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
-                      <div className="flex items-center justify-between mt-auto gap-2">
-                        <div className="flex items-center gap-3">
-                          <Button
-                             variant={submission.hasVoted ? "default" : "outline"}
-                             size="sm"
-                             onClick={() => handleVote(submission.id)}
-                             className={cn(
-                               "gap-2 transition-colors duration-150",
-                               submission.hasVoted ? "bg-primary text-primary-foreground hover:bg-primary/90" : ""
-                             )}
-                           >
-                             <Heart size={16} className={cn(submission.hasVoted && "fill-current")} />
-                             <span>{submission.voteCount}</span>
-                           </Button>
-                           {submission.status && submission.status !== 'pending' && (
-                              <span
-                                className={cn(
-                                  "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                  {
-                                    'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
-                                    'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
-                                    'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
-                                    'bg-gray-100 text-gray-800 dark:bg-gray-700 dark:text-gray-300': !['under_review', 'selected', 'rejected'].includes(submission.status)
-                                  }
-                                )}
-                              >
-                                {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
-                              </span>
-                           )}
+      {/* Main Content Area - Could be a grid later */}
+      <div className="space-y-6">
+         {/* Submissions Box */}
+         <div className="bg-white dark:bg-gray-800 rounded-lg shadow p-4 md:p-6">
+           <h2 className="text-xl font-semibold mb-6 text-gray-900 dark:text-gray-100">Product Ideas</h2>
+          
+          <motion.div 
+            className="grid gap-6 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4" // Adjusted gap and added xl col
+            variants={containerVariants}
+            initial="hidden"
+            animate="visible"
+          >
+            {submissions.length === 0 ? (
+              <div className="col-span-full text-center py-12">
+                <p className="text-muted-foreground">No product ideas submitted yet. Be the first!</p>
+              </div>
+            ) : (
+              submissions.map((submission) => (
+                <motion.div key={submission.id} variants={itemVariants} layout>
+                  {/* Use Card component from Shadcn for consistency */}
+                  {/* Ensure Card component styling adapts to dark mode */}
+                  <Tilt 
+                     rotationFactor={3} 
+                     className={cn(
+                      "w-full h-full",
+                      submission.image_url && "cursor-pointer"
+                     )}
+                    >
+                      {/* Card Styling - bg-card should adapt */}
+                    <div className="flex flex-col overflow-hidden rounded-lg border bg-card text-card-foreground shadow-sm h-full dark:border-gray-700">
+                      {submission.image_url ? (
+                        <img
+                          src={submission.image_url}
+                          alt={submission.title}
+                           className="h-48 w-full object-cover transition-opacity hover:opacity-90 cursor-pointer"
+                          onClick={() => setSelectedImageUrl(submission.image_url)}
+                        />
+                      ) : (
+                         // Darker placeholder for dark mode
+                        <div className="h-48 w-full bg-gray-100 dark:bg-gray-700 flex items-center justify-center">
+                          <span className="text-muted-foreground text-sm">No Image</span>
                         </div>
-
-                        {user && submission.submitted_by === user.id && (
-                          <div className="flex items-center gap-1">
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-muted-foreground hover:text-foreground"
-                              onClick={() => handleEditClick(submission)}
-                              aria-label="Edit submission"
-                            >
-                              <Pencil size={16} />
-                            </Button>
-                            <Button 
-                              variant="ghost" 
-                              size="icon" 
-                              className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
-                              onClick={() => handleDeleteClick(submission.id)}
-                              aria-label="Delete submission"
+                      )}
+                      {/* Card Content */}
+                       <div className="p-4 flex flex-col flex-grow">
+                         <h3 className="font-semibold tracking-tight text-lg mb-1 text-card-foreground">{submission.title}</h3>
+                         <p className="text-sm text-muted-foreground mb-4 flex-grow">{submission.description}</p>
+                         {/* Card Footer - Instagram Style */}
+                        <div className="flex items-center justify-between mt-auto pt-3 border-t dark:border-gray-700 gap-4">
+                           <div className="flex items-center gap-3">
+                             {/* Like Button */}
+                             <Button
+                               variant="ghost" // More subtle button
+                               size="icon" // Focus on icon
+                               onClick={() => handleVote(submission.id)}
+                               className={cn(
+                                 "h-8 w-8 group", // Base size and group for hover effects
+                                 submission.hasVoted ? "text-red-500" : "text-foreground/60 hover:text-foreground/90"
+                               )}
                              >
-                              <Trash2 size={16} />
-                            </Button>
-                          </div>
-                        )}
-                      </div>
+                               <Heart 
+                                 size={22} // Larger icon
+                                 className={cn(submission.hasVoted && "fill-current")} 
+                               />
+                               <span className="sr-only">Vote</span> { /* Accessibility */}
+                             </Button>
+                             {/* Vote Count - Remove text */}
+                             <span className="text-sm font-medium text-card-foreground">
+                               {submission.voteCount}
+                             </span>
+                             {/* Status Tag - Moved next to count */}
+                              {submission.status && submission.status !== 'pending' && (
+                                 <span
+                                   className={cn(
+                                     "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                     {
+                                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
+                                       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
+                                       'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
+                                        // Adjusted fallback background/text for dark mode
+                                       'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200': !['under_review', 'selected', 'rejected'].includes(submission.status)
+                                     }
+                                   )}
+                                 >
+                                   {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
+                                 </span>
+                              )}
+                           </div>
+  
+                           {user && submission.submitted_by === user.id && (
+                              <div className="flex items-center gap-1">
+                               {/* Edit/Delete Icons - Consistent Ghost style */}
+                               <Button 
+                                 variant="ghost" 
+                                 size="icon" 
+                                 className="h-8 w-8 text-muted-foreground hover:text-foreground"
+                                 onClick={() => handleEditClick(submission)}
+                                 aria-label="Edit submission"
+                               >
+                                 <Pencil size={16} />
+                               </Button>
+                               <Button 
+                                 variant="ghost" 
+                                 size="icon" 
+                                 className="h-8 w-8 text-destructive/80 hover:text-destructive hover:bg-destructive/10"
+                                 onClick={() => handleDeleteClick(submission.id)}
+                                 aria-label="Delete submission"
+                                >
+                                 <Trash2 size={16} />
+                               </Button>
+                             </div>
+                           )}
+                         </div>
+                       </div>
                     </div>
-                  </div>
-                </Tilt>
-              </motion.div>
-            ))
-          )}
-        </motion.div>
-      </div>
+                  </Tilt>
+                </motion.div>
+              ))
+            )}
+          </motion.div>
+         </div> { /* End Submissions Box */}
+       </div> { /* End Main Content Area */}
       
+      {/* Modals remain unchanged, assuming they adapt via Shadcn UI */}
       <SubmitIdeaModal 
         open={submitModalOpen}
         onClose={() => setSubmitModalOpen(false)}
