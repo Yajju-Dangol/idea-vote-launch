@@ -8,6 +8,7 @@ import { Plus, Lightbulb, ArrowUpRight, ClipboardCopy } from "lucide-react";
 import SubmissionsList from "@/components/dashboard/SubmissionsList";
 import DashboardHeader from "@/components/dashboard/DashboardHeader";
 import { motion } from "framer-motion";
+import { cn } from "@/lib/utils";
 
 // Define containerVariants outside the component
 const containerVariants = {
@@ -176,15 +177,35 @@ const Dashboard = () => {
           <div className="flex flex-wrap items-center justify-between gap-4 mb-6"> {/* Added flex-wrap and gap */}
             <h2 className="text-2xl font-bold text-gray-900 dark:text-gray-100">Product Submissions</h2>
             {/* Button Group */}
-            <div className="flex items-center gap-2">
-              <Button 
-                variant="outline" // Changed variant for visual distinction
+            <div className="flex items-center gap-4"> {/* Increased gap slightly */}
+              {/* Brutalist Copy URL Button */}
+              <button 
                 onClick={handleCopyUrl} 
-                className="gap-2"
+                className={cn(
+                  "group relative flex cursor-pointer items-center justify-center gap-2",
+                  "h-11 px-4", // Adjusted height/padding
+                  "border-2 border-foreground dark:border-primary-foreground/80", // Bold border
+                  "outline outline-2 outline-offset-2 outline-background", // Offset outline
+                  "bg-background text-foreground", // Colors
+                  "shadow-[4px_4px_0_hsl(var(--primary))] dark:shadow-[4px_4px_0_var(--primary)]", // Initial shadow using primary color
+                  "transition-all duration-150 ease-out", // Transition
+                  "hover:translate-x-[-2px] hover:translate-y-[-2px] hover:shadow-[6px_6px_0_hsl(var(--primary))] dark:hover:shadow-[6px_6px_0_var(--primary)]", // Hover effect
+                  "active:translate-x-[2px] active:translate-y-[2px] active:shadow-[0px_0px_0_hsl(var(--primary))] dark:active:shadow-[0px_0px_0_var(--primary)]", // Active effect
+                  "rounded-none" // Sharp corners for brutalist style
+                )}
               >
-                 <ClipboardCopy size={16} />
-                 Copy URL
-              </Button>
+                 <ClipboardCopy 
+                   size={18} 
+                   className="transition-transform duration-150 ease-out group-hover:rotate-[-5deg] group-active:rotate-[5deg]" // Icon transform
+                 />
+                 <span 
+                   className="text-sm font-semibold uppercase transition-transform duration-150 ease-out group-hover:skew-x-[-5deg] group-active:skew-x-[5deg]" // Text transform
+                  >
+                    YOUR URL
+                  </span>
+              </button>
+
+              {/* Keep View Public Page button as is, or style similarly if desired */}
               <Button onClick={() => navigate(`/p/${business.slug}`)} className="gap-2">
                 <ArrowUpRight size={16} />
                 View Public Page
