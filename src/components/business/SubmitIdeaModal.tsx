@@ -1,5 +1,6 @@
+'use client';
 
-import { useState } from "react";
+import React, { useState, useEffect, useRef } from 'react';
 import { useNavigate } from "react-router-dom";
 import { supabase } from "@/integrations/supabase/client";
 import { Button } from "@/components/ui/button";
@@ -16,6 +17,7 @@ import {
   DialogFooter,
 } from "@/components/ui/dialog";
 import { Upload } from "lucide-react";
+import ConfettiCannon, { ConfettiCannonHandle } from "@/components/ui/ConfettiCannon";
 
 interface SubmitIdeaModalProps {
   open: boolean;
@@ -24,13 +26,16 @@ interface SubmitIdeaModalProps {
   onSubmissionComplete: () => void;
 }
 
-const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: SubmitIdeaModalProps) => {
+const SubmitIdeaModal: React.FC<SubmitIdeaModalProps> = ({ open, onClose, businessId, onSubmissionComplete }) => {
   const navigate = useNavigate();
   const [loading, setLoading] = useState(false);
   const [title, setTitle] = useState("");
   const [description, setDescription] = useState("");
   const [image, setImage] = useState<File | null>(null);
   const [imagePreview, setImagePreview] = useState<string | null>(null);
+  
+  // Ref for confetti cannon
+  const confettiRef = useRef<ConfettiCannonHandle>(null);
 
   const handleImageChange = (e: React.ChangeEvent<HTMLInputElement>) => {
     if (e.target.files && e.target.files[0]) {
@@ -55,6 +60,7 @@ const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: Su
       
       // Upload image if provided
       let imageUrl = "https://placehold.co/600x400?text=No+Image";
+      let imagePath: string | null = null;
       
       if (image) {
         const fileExt = image.name.split('.').pop();
@@ -72,6 +78,7 @@ const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: Su
           .getPublicUrl(filePath);
         
         imageUrl = publicUrl;
+        imagePath = filePath;
       }
       
       // Submit the idea
@@ -89,12 +96,19 @@ const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: Su
         .select()
         .single();
       
-      if (error) throw error;
+      if (error) {
+        // If image was uploaded but DB insert failed, try to delete the image
+        if (imageUrl && imagePath) {
+          console.warn("DB insert failed after image upload, attempting to delete image:", imagePath);
+          await supabase.storage.from("submission-images").remove([imagePath]);
+        }
+        throw error;
+      }
       
-      toast({
-        title: "Idea submitted successfully!",
-        description: "Thank you for your suggestion."
-      });
+      console.log("Submission added successfully:", data);
+      
+      // -- Trigger Confetti --
+      confettiRef.current?.fire();
       
       // Reset form
       setTitle("");
@@ -117,6 +131,10 @@ const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: Su
   };
 
   return (
+    <>
+      {/* Render ConfettiCannon (it's positioned fixed, doesn't affect layout) */}
+      <ConfettiCannon ref={confettiRef} />
+      
     <Dialog open={open} onOpenChange={(open) => !open && onClose()}>
       <DialogContent className="sm:max-w-md">
         <DialogHeader>
@@ -203,6 +221,7 @@ const SubmitIdeaModal = ({ open, onClose, businessId, onSubmissionComplete }: Su
         </form>
       </DialogContent>
     </Dialog>
+    </>
   );
 };
 

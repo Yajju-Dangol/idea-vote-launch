@@ -588,43 +588,62 @@ const BusinessPage = () => {
                          {/* Card Footer - Instagram Style */}
                         <div className="flex items-center justify-between mt-auto pt-3 border-t dark:border-gray-700 gap-4">
                            <div className="flex items-center gap-3">
-                             {/* Like Button */}
-                             <Button
-                               variant="ghost" // More subtle button
-                               size="icon" // Focus on icon
-                               onClick={() => handleVote(submission.id)}
-                               className={cn(
-                                 "h-8 w-8 group", // Base size and group for hover effects
-                                 submission.hasVoted ? "text-red-500" : "text-foreground/60 hover:text-foreground/90"
-                               )}
-                             >
-                               <Heart 
-                                 size={22} // Larger icon
-                                 className={cn(submission.hasVoted && "fill-current")} 
-                               />
-                               <span className="sr-only">Vote</span> { /* Accessibility */}
-                             </Button>
-                             {/* Vote Count - Remove text */}
-                             <span className="text-sm font-medium text-card-foreground">
-                               {submission.voteCount}
-                             </span>
-                             {/* Status Tag - Moved next to count */}
-                              {submission.status && submission.status !== 'pending' && (
-                                 <span
-                                   className={cn(
-                                     "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
-                                     {
-                                       'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
-                                       'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
-                                       'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
-                                        // Adjusted fallback background/text for dark mode
-                                       'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200': !['under_review', 'selected', 'rejected'].includes(submission.status)
-                                     }
-                                   )}
-                                 >
-                                   {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
-                                 </span>
+                             {/* New Like Button Implementation */}
+                            <button
+                              onClick={() => handleVote(submission.id)}
+                              className={cn(
+                                "flex items-center justify-center gap-2", // Flex container for icon and count
+                                "h-10 px-4 rounded-lg", // Size and shape
+                                "bg-gray-100 dark:bg-gray-700/50", // Background
+                                "shadow-inner dark:shadow-inner-dark", // Subtle inner shadow 
+                                "hover:bg-gray-200 dark:hover:bg-gray-600/50", // Hover state
+                                "transition-colors duration-150",
+                                "group" // Group for potential hover effects on children
                               )}
+                            >
+                              <motion.svg
+                                key={submission.hasVoted ? 'liked' : 'unliked'} // Key change triggers animation
+                                fillRule="nonzero"
+                                viewBox="0 0 24 24"
+                                xmlns="http://www.w3.org/2000/svg"
+                                className={cn(
+                                  "h-6 w-6 transition-colors duration-200 ease-out",
+                                  submission.hasVoted
+                                    ? "fill-red-500 stroke-red-500" // Liked state: filled red
+                                    : "fill-none stroke-current text-gray-500 dark:text-gray-400 group-hover:text-gray-700 dark:group-hover:text-gray-200" // Unliked state: stroke only
+                                )}
+                                initial={{ scale: 1 }}
+                                animate={{
+                                  scale: submission.hasVoted ? [1, 1.3, 1] : 1, // Pop animation on like
+                                }}
+                                transition={{ duration: 0.3 }}
+                              >
+                                <path
+                                  d="m11.645 20.91-.007-.003-.022-.012a15.247 15.247 0 0 1-.383-.218 25.18 25.18 0 0 1-4.244-3.17C4.688 15.36 2.25 12.174 2.25 8.25 2.25 5.322 4.714 3 7.688 3A5.5 5.5 0 0 1 12 5.052 5.5 5.5 0 0 1 16.313 3c2.973 0 5.437 2.322 5.437 5.25 0 3.925-2.438 7.111-4.739 9.256a25.175 25.175 0 0 1-4.244 3.17 15.247 15.247 0 0 1-.383.219l-.022.012-.007.004-.003.001a.752.752 0 0 1-.704 0l-.003-.001Z"
+                                />
+                              </motion.svg>
+                              {/* Add Vote Count inside button */}
+                              <span className="text-sm font-medium text-card-foreground">
+                                {submission.voteCount}
+                              </span>
+                            </button>
+                            {/* Re-add Status Tag */}
+                            {submission.status && submission.status !== 'pending' && (
+                               <span
+                                 className={cn(
+                                   "inline-block px-2.5 py-0.5 rounded-full text-xs font-medium",
+                                   {
+                                     'bg-yellow-100 text-yellow-800 dark:bg-yellow-900 dark:text-yellow-300': submission.status === 'under_review',
+                                     'bg-green-100 text-green-800 dark:bg-green-900 dark:text-green-300': submission.status === 'selected',
+                                     'bg-red-100 text-red-800 dark:bg-red-900 dark:text-red-300': submission.status === 'rejected',
+                                     'bg-gray-100 text-gray-800 dark:bg-gray-600 dark:text-gray-200': !['under_review', 'selected', 'rejected'].includes(submission.status)
+                                   }
+                                 )}
+                               >
+                                 {submission.status.charAt(0).toUpperCase() + submission.status.slice(1).replace(/_/g, ' ')}
+                               </span>
+                            )}
+                             
                            </div>
   
                            {user && submission.submitted_by === user.id && (
