@@ -69,7 +69,7 @@ const CreateBusiness = () => {
     <div className="min-h-screen flex items-center justify-center px-4 py-12 bg-gray-100 dark:bg-gray-900">
       <Card className="w-full max-w-lg">
         <CardHeader>
-          <CardTitle>Create Your Votely Business Page</CardTitle>
+          <CardTitle>Create Your Ideya Business Page</CardTitle>
           <CardDescription>
             Set up your page where users can suggest and vote on product ideas
           </CardDescription>

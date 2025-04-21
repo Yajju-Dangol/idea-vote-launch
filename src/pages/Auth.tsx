@@ -32,7 +32,7 @@ const Auth = () => {
         </Button>
 
         <h1 className="text-2xl font-bold text-center mb-6 text-gray-900 dark:text-gray-100">
-          {isBusiness ? "Create Your Business Page" : "Join Votely"}
+          {isBusiness ? "Create Your Business Page" : "Join Ideya"}
         </h1>
         
         <Tabs value={activeTab} onValueChange={(v) => setActiveTab(v as "login" | "register")}>
